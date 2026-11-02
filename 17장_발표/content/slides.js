@@ -233,7 +233,7 @@
       title: "실제 사례: 태즈메이니아",
       cls: "with-paper",
       body: [
-        '<img class="paper" src="assets/henrich_2004.jpg" alt="Henrich (2004) 논문 첫 페이지">',
+        '<img class="paper" src="17장_발표/assets/henrich_2004.jpg" alt="Henrich (2004) 논문 첫 페이지">',
         cols(2, [
           col({
             label: "잃었거나 갖지 못한 기술",
