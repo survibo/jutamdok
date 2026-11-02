@@ -1,0 +1,87 @@
+/* 슬라이드 부품. js/ui.js의 함수와 짝을 이룬다. */
+.small { font-size: 22px; color: var(--gray); }
+.statement { margin-top: auto; margin-bottom: 72px; font-size: 36px; line-height: 1.4; font-weight: 600; }
+
+/* 칸 나누기 */
+.cols { display: grid; gap: 64px; }
+.cols.n2 { grid-template-columns: 1fr 1fr; }
+.cols.n3 { grid-template-columns: repeat(3, 1fr); gap: 48px; }
+.col { display: flex; flex-direction: column; gap: 14px; }
+.col .label { font-size: 22px; color: var(--gray); }
+.col h3 { font-size: 36px; }
+.col p, .col li { font-size: 30px; }
+/* 제목 아래 남는 공간의 세로 가운데에 놓는다 */
+.slide > .cols, .slide > table { margin-block: auto; }
+/* 칸 맨 위의 회색 작은 글씨가 약해 아래로 쏠려 보이므로 위로 보정한다. 값의 절반만큼 올라간다. */
+.slide > .cols { padding-bottom: 100px; }
+
+ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: 20px; }
+
+/* 표 */
+table.t { width: 100%; border-collapse: collapse; font-size: 26px; line-height: 1.4; }
+table.t th { padding: 0 24px 14px 0; border-bottom: 1px solid var(--ink); text-align: left; font-size: 20px; font-weight: 400; color: var(--gray); }
+table.t td { padding: 20px 24px 20px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.t.compact { font-size: 21px; }
+
+/* 표지 · 큰 문장 */
+.cover { justify-content: center; gap: 48px; }
+.headline { font-size: 80px; margin-bottom: 60px; }
+.presenter { font-size: 40px; }
+.center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px; }
+.thanks { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 96px; font-weight: 600; }
+
+/* 추정치 사다리: 가운데 축에서 선을 뽑아 설명을 단다. --row가 설명 한 줄의 높이. */
+.ladder { --label-w: 170px; --row: 92px; --ticks: 40px; flex: 1; display: grid; grid-template-columns: var(--label-w) 1fr; align-content: center; align-items: center; }
+.lab { font-size: 28px; font-weight: 600; }
+.zone { position: relative; }
+.zone.up { height: calc(var(--max) * var(--row)); }
+.zone.dn { height: calc(var(--ticks) + var(--max) * var(--row)); }
+.axis { position: relative; height: 1px; background: var(--ink); }
+.axis .dot { position: absolute; top: -7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--accent); z-index: 1; }
+.range-bar { position: absolute; top: -2px; height: 5px; background: var(--accent); opacity: .35; }
+.stem { position: absolute; width: 0; border-left: 1px solid var(--gray); }
+.up .stem { bottom: 0; height: calc(var(--lv) * var(--row)); }
+.dn .stem { top: 0; height: calc(var(--ticks) + var(--lv) * var(--row)); }
+.tx { position: absolute; display: flex; flex-direction: column; gap: 2px; white-space: nowrap; background: var(--paper); }
+.tx b { font-size: 28px; line-height: 1.25; }
+.tx span { font-size: 20px; line-height: 1.35; color: var(--gray); }
+.up .tx { top: 0; left: 12px; }
+.dn .tx { bottom: 0; right: 12px; text-align: right; } /* 오른쪽 끝이라 글자를 선 왼쪽에 둔다 */
+.ticks { position: absolute; inset: 0 0 auto 0; height: var(--ticks); }
+.ticks span { position: absolute; top: 10px; padding: 0 4px; transform: translateX(-50%); font-size: 18px; color: var(--gray); white-space: nowrap; background: var(--paper); z-index: 1; }
+
+
+
+
+/* 시뮬레이션 슬라이드 */
+.sim-wrap { flex: 1; min-height: 0; display: grid; grid-template-columns: 500px 1fr; gap: 64px; }
+.sim-text { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.sim-text h2 { font-size: 44px; }
+.sim-text p, .sim-text li { font-size: 26px; }
+.sim-text .small { font-size: 20px; }
+.sim-text .q-label { font-size: 44px; line-height: 1.2; font-weight: 600; color: var(--accent); }
+.sim-text .q { font-size: 36px; line-height: 1.4; font-weight: 600; }
+.sim-text .formula { font-size: 28px; }
+.sim-text .small:last-child { margin-top: auto; }
+.params { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; font-size: 22px; line-height: 1.4; }
+.params dt { font-weight: 600; }
+.params dd { margin: 0; color: var(--gray); }
+
+.sim { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; }
+.sim canvas { display: block; width: 100%; flex: 1; min-height: 0; }
+.ctl { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 40px; }
+.ctl.one { grid-template-columns: 1fr; }
+.sim label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 20px; color: var(--gray); }
+.sim label output { color: var(--ink); font-variant-numeric: tabular-nums; }
+.sim input[type=range] { width: 100%; height: 26px; margin: 0; accent-color: var(--accent); }
+.sim .small { font-size: 18px; }
+
+.readout { display: flex; align-items: baseline; gap: 40px; }
+.ro .k { display: block; font-size: 18px; color: var(--gray); }
+.ro .v { font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.status { margin-left: auto; font-size: 26px; font-weight: 600; }
+.status.down { color: var(--accent); }
+
+/* 슬라이드 오른쪽 위의 논문 이미지 (참고용으로 작게) */
+.paper { position: absolute; top: 80px; right: 100px; width: 250px; border: 1px solid var(--line); }
+.with-paper > .cols, .with-paper > .statement { margin-right: 300px; }

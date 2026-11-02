@@ -1,0 +1,37 @@
+/* 슬라이드 틀: 1600×900 무대, 아래쪽 표시줄, 내비, 기본 글자 */
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font); overflow: hidden;
+  word-break: keep-all; overflow-wrap: break-word; /* 한글이 단어 중간에서 끊기지 않게 */
+}
+/* 끌어서 넘길 때 브라우저의 스크롤, 뒤로 가기, 글자 선택이 끼어들지 않게 한다 */
+html, body { overscroll-behavior: none; }
+#viewport { position: fixed; inset: 0; touch-action: none; user-select: none; }
+/* 크기와 상관없이 항상 화면 정중앙. 배율은 deck.js의 fit()이 정한다. */
+#stage:not(.ready) { visibility: hidden; } /* 글꼴을 받을 때까지 숨긴다 (deck.js) */
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform: translate(-50%, -50%); }
+
+.slide {
+  position: absolute; inset: 0; box-sizing: border-box; padding: 80px 100px 90px;
+  display: none; flex-direction: column; gap: 40px; overflow: hidden;
+}
+.slide.on { display: flex; }
+
+/* 왼쪽: 구역 · 출처 쪽수, 오른쪽: 쪽 번호 */
+.foot { position: absolute; left: 100px; right: 100px; bottom: 36px; display: flex; justify-content: space-between; font-size: 18px; color: var(--gray); font-variant-numeric: tabular-nums; }
+
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
+h1 { font-size: 96px; line-height: 1.2; }
+h2 { font-size: 52px; line-height: 1.25; }
+h3 { font-size: 30px; line-height: 1.35; }
+p, li { margin: 0; font-size: 30px; line-height: 1.5; }
+b { font-weight: 600; }
+.accent { color: var(--accent); }
+
+/* 내비: 마우스를 올릴 때만 보인다 */
+#nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 4px; align-items: center; opacity: 0; }
+#nav:hover, #nav:focus-within { opacity: 1; }
+#nav button { font: 16px var(--font); color: var(--ink); background: var(--paper); border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; }
+#nav .cnt { font-size: 16px; color: var(--gray); padding: 0 8px; font-variant-numeric: tabular-nums; }
+
+.load-error { padding: 80px; font-size: 28px; line-height: 1.6; color: var(--accent); }

@@ -1,0 +1,11 @@
+/* 색과 글꼴. 흰 배경, 먹색, 강조색 하나, 글꼴 하나. */
+:root {
+  color-scheme: light;
+  --paper: #fff;
+  --ink: #111;
+  --gray: #6b6b6b;
+  --line: #dcdcdc;
+  --tint: #f3f3f3;     /* 차트 음영 */
+  --accent: #c4521d;
+  --font: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+}
