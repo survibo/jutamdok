@@ -1,13 +1,19 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>1g과 100만 명</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
-<style>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>17장 김서혁</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&display=swap"
+    />
+    <style>
 /* 색과 글꼴. 흰 배경, 먹색, 강조색 하나, 글꼴 하나. */
 :root {
   color-scheme: light;
@@ -20,7 +26,7 @@
   --font: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
 }
 </style>
-<style>
+    <style>
 /* 슬라이드 틀: 1600×900 무대, 아래쪽 표시줄, 내비, 기본 글자 */
 html, body { height: 100%; margin: 0; }
 body {
@@ -59,7 +65,7 @@ b { font-weight: 600; }
 
 .load-error { padding: 80px; font-size: 28px; line-height: 1.6; color: var(--accent); }
 </style>
-<style>
+    <style>
 /* 슬라이드 부품. js/ui.js의 함수와 짝을 이룬다. */
 .small { font-size: 22px; color: var(--gray); }
 .statement { margin-top: auto; margin-bottom: 72px; font-size: 36px; line-height: 1.4; font-weight: 600; }
@@ -85,10 +91,15 @@ table.t th { padding: 0 24px 14px 0; border-bottom: 1px solid var(--ink); text-a
 table.t td { padding: 20px 24px 20px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 table.t.compact { font-size: 21px; }
 
+/* 질문 번호와 질문 문장 (시뮬레이션 없는 질문 슬라이드에서도 쓴다) */
+.q-label { font-size: 44px; line-height: 1.2; font-weight: 600; color: var(--accent); }
+.q { font-size: 44px; line-height: 1.4; font-weight: 600; text-wrap: balance; }
+
 /* 표지 · 큰 문장 */
 .cover { justify-content: center; gap: 48px; }
 .headline { font-size: 80px; margin-bottom: 60px; }
-.presenter { font-size: 40px; }
+.cover h1 { font-size: 80px; }
+.presenter { font-size: 34px; }
 .center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px; }
 .thanks { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 96px; font-weight: 600; }
 
@@ -121,8 +132,7 @@ table.t.compact { font-size: 21px; }
 .sim-text h2 { font-size: 44px; }
 .sim-text p, .sim-text li { font-size: 26px; }
 .sim-text .small { font-size: 20px; }
-.sim-text .q-label { font-size: 44px; line-height: 1.2; font-weight: 600; color: var(--accent); }
-.sim-text .q { font-size: 36px; line-height: 1.4; font-weight: 600; }
+.sim-text .q { font-size: 36px; }
 .sim-text .formula { font-size: 28px; }
 .sim-text .small:last-child { margin-top: auto; }
 .params { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; font-size: 22px; line-height: 1.4; }
@@ -137,6 +147,11 @@ table.t.compact { font-size: 21px; }
 .sim label output { color: var(--ink); font-variant-numeric: tabular-nums; }
 .sim input[type=range] { width: 100%; height: 26px; margin: 0; accent-color: var(--accent); }
 .sim .small { font-size: 18px; }
+/* 아래 설명 + 발표 단계 표시 (지금 단계가 진한 점) */
+.sim-foot { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.dots { display: flex; gap: 8px; flex-shrink: 0; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--gray); }
 
 .readout { display: flex; align-items: baseline; gap: 40px; }
 .ro .k { display: block; font-size: 18px; color: var(--gray); }
@@ -148,18 +163,18 @@ table.t.compact { font-size: 21px; }
 .paper { position: absolute; top: 80px; right: 100px; width: 250px; border: 1px solid var(--line); }
 .with-paper > .cols, .with-paper > .statement { margin-right: 300px; }
 </style>
-</head>
-<body>
-<div id="viewport"><div id="stage"></div></div>
+  </head>
+  <body>
+    <div id="viewport"><div id="stage"></div></div>
 
-<nav id="nav" aria-label="슬라이드 이동">
-  <button type="button" id="prev" aria-label="이전 슬라이드">←</button>
-  <span class="cnt" id="cnt"></span>
-  <button type="button" id="next" aria-label="다음 슬라이드">→</button>
-  <button type="button" id="fs">전체 화면</button>
-</nav>
+    <nav id="nav" aria-label="슬라이드 이동">
+      <button type="button" id="prev" aria-label="이전 슬라이드">←</button>
+      <span class="cnt" id="cnt"></span>
+      <button type="button" id="next" aria-label="다음 슬라이드">→</button>
+      <button type="button" id="fs">전체 화면</button>
+    </nav>
 
-<script>
+    <script>
 /* 슬라이드 부품: content/slides.js에서 쓰는 함수들. 전부 HTML 문자열을 돌려준다.
    모양은 css/components.css에서 고친다. */
 window.UI = (() => {
@@ -211,7 +226,7 @@ window.UI = (() => {
   return { p, small, statement, params, list, col, cols, center, table, ladder, simSlide, question, questionLabel };
 })();
 </script>
-<script>
+    <script>
 /* 헨릭(2004) 전수 모델과 숫자 표기.
    가장 숙련된 사람의 수준 b를 추적한다.
    N명의 학습자가 각각 (스승 − α + Gumbel(0, β))를 얻으면,
@@ -271,7 +286,7 @@ window.Model = (() => {
   return { nStar, deltaZ, run, runMany, mean, group, people, percent };
 })();
 </script>
-<script>
+    <script>
 /* 캔버스 선 그래프. 옅은 시행은 회색, 대표선은 강조색. */
 window.Chart = (() => {
   const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -288,7 +303,7 @@ window.Chart = (() => {
 
   /* o: { xMin, xMax, yMin, yMax, log, xTicks, yTicks, yFmt, xLabel, yLabel,
           bands: [{from,to,label}], hlines: [{y,label,align}],
-          faint: [[y...]...] 세대별 시행들, main: [[x,y]...] 대표선, dot: {x,y} } */
+          faint: [[y...]...] 세대별 시행들, others: 비교용 선, xFmt: x 눈금 글자, main: [[x,y]...] 대표선, dot: {x,y} } */
   function draw(canvas, o) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
@@ -331,7 +346,11 @@ window.Chart = (() => {
       g.fillText(o.yFmt ? o.yFmt(v) : v, L - 10, y);
     });
     g.textBaseline = 'top'; g.textAlign = 'center';
-    o.xTicks.forEach((v) => { g.fillText(v, X(v), T + ph + 8); });
+    o.xTicks.forEach((v) => {
+      const label = String(o.xFmt ? o.xFmt(v) : v);
+      const half = g.measureText(label).width / 2;
+      g.fillText(label, Math.min(X(v), w - half), T + ph + 8); // 오른쪽 끝 글자가 잘리지 않게
+    });
     g.textAlign = 'right'; g.fillText(o.xLabel, L + pw, T + ph + 32);
     g.textAlign = 'left'; g.fillText(o.yLabel, L, T + ph + 32);
 
@@ -343,6 +362,12 @@ window.Chart = (() => {
       g.fillText(hl.label, hl.align === 'left' ? L + 8 : L + pw - 4, y - 4);
     });
 
+    // 비교용 회색 선: [{ pts: [[x,y]...], label }] 왼쪽 시작점 위에 이름을 단다 (오른쪽은 기준선 이름 자리)
+    (o.others || []).forEach((ln) => {
+      path(ln.pts, gray, 1.2, 0.45);
+      const [x, y] = ln.pts[0];
+      if (ln.label) { g.fillStyle = gray; g.textAlign = 'left'; g.textBaseline = 'bottom'; g.fillText(ln.label, X(x) + 6, Y(y) - 4); }
+    });
     (o.faint || []).forEach((r) => path(r.map((y, t) => [t, y]), gray, 1.2, 0.3));
     if (o.main) path(o.main, accent, 3);
 
@@ -355,17 +380,19 @@ window.Chart = (() => {
   return { draw, niceMax };
 })();
 </script>
-<script>
+    <script>
 /* 시뮬레이션 틀. content/sims.js에 적은 설정으로 계기판과 슬라이더를 만들고 연결한다.
    Sims.define('이름', {
      controls: [{ key, label, min, max, step, value, read: 슬라이더값→실제값, show: 실제값→표시 글자 }],
      readouts: [{ key, label }],
      status: true,        // 상태 글자 표시 여부
      note: '아래 설명',
+     steps: [{ key: 슬라이더값 }, ...],  // 발표 단계. '다음'을 누르면 차례로 이 값으로 움직인다
      render(values, ui),  // ui.set(key, 글자), ui.status(글자, 나쁜상태여부), ui.chart(옵션)
    }); */
 window.Sims = (() => {
   const defs = {};
+  const ANIM_MS = 600;
 
   const define = (id, def) => { defs[id] = def; };
 
@@ -378,11 +405,12 @@ window.Sims = (() => {
       return `<div><label for="${inputId}">${c.label} <output data-c="${c.key}"></output></label>
         <input id="${inputId}" data-k="${c.key}" type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}"></div>`;
     }).join('');
+    const dots = d.steps ? `<span class="dots">${d.steps.map(() => '<i></i>').join('')}</span>` : '';
     return `<div class="sim" data-sim="${id}">
       <div class="readout">${readouts}${d.status ? '<span class="status" data-status></span>' : ''}</div>
       <canvas></canvas>
       <div class="ctl${d.controls.length === 1 ? ' one' : ''}">${controls}</div>
-      ${d.note ? `<p class="small">${d.note}</p>` : ''}
+      <div class="sim-foot">${d.note ? `<p class="small">${d.note}</p>` : '<span></span>'}${dots}</div>
     </div>`;
   }
 
@@ -401,18 +429,79 @@ window.Sims = (() => {
     });
   }
 
+  /* ---------- 발표 단계 ---------- */
+  const input = (root, key) => root.querySelector(`[data-k="${key}"]`);
+  const stepRoot = (slide) => [...slide.querySelectorAll('[data-sim]')].find((r) => defs[r.dataset.sim].steps);
+
+  function markStep(root, i) {
+    root.dataset.step = i;
+    root.querySelectorAll('.dots i').forEach((dot, j) => dot.classList.toggle('on', j === i));
+  }
+
+  function stopAnim(root) {
+    cancelAnimationFrame(root._anim);
+    clearTimeout(root._finish);
+  }
+
+  function setValues(root, target) {
+    stopAnim(root);
+    Object.entries(target).forEach(([k, v]) => { input(root, k).value = v; });
+    render(root);
+  }
+
+  /* 지금 값에서 목표 값으로 슬라이더를 부드럽게 움직인다 */
+  function animateTo(root, target) {
+    stopAnim(root);
+    const from = Object.fromEntries(Object.keys(target).map((k) => [k, +input(root, k).value]));
+    let t0 = null; // 첫 프레임의 시각을 기준으로 삼는다
+    const frame = (now) => {
+      if (t0 === null) t0 = now;
+      const t = Math.max(0, Math.min(1, (now - t0) / ANIM_MS));
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // 천천히 출발해 천천히 멈춘다
+      Object.entries(target).forEach(([k, v]) => { input(root, k).value = from[k] + (v - from[k]) * e; });
+      render(root);
+      if (t < 1) root._anim = requestAnimationFrame(frame);
+      else setValues(root, target);
+    };
+    root._anim = requestAnimationFrame(frame);
+    // 화면 갱신이 멈춰도(창이 가려진 경우 등) 목표 값에는 반드시 도착하게 한다
+    root._finish = setTimeout(() => setValues(root, target), ANIM_MS + 150);
+  }
+
+  /* 슬라이드에 들어올 때: 앞에서 왔으면 첫 단계, 뒤에서 왔으면 마지막 단계 */
+  function enter(slide, fromBehind) {
+    const root = stepRoot(slide);
+    if (!root) return;
+    const steps = defs[root.dataset.sim].steps;
+    const i = fromBehind ? steps.length - 1 : 0;
+    markStep(root, i);
+    setValues(root, steps[i]);
+  }
+
+  /* 단계를 하나 넘긴다. 넘길 단계가 없으면 false (그때는 슬라이드를 넘긴다) */
+  function step(slide, dir) {
+    const root = stepRoot(slide);
+    if (!root) return false;
+    const steps = defs[root.dataset.sim].steps;
+    const i = +root.dataset.step + dir;
+    if (i < 0 || i >= steps.length) return false;
+    markStep(root, i);
+    animateTo(root, steps[i]);
+    return true;
+  }
+
   /* 슬라이더 연결 (슬라이드가 화면에 만들어진 뒤 한 번) */
   const wire = (stage) => stage.querySelectorAll('[data-sim]').forEach((root) => {
-    root.querySelectorAll('input').forEach((inp) => inp.addEventListener('input', () => render(root)));
+    root.querySelectorAll('input').forEach((inp) => inp.addEventListener('input', () => { stopAnim(root); render(root); }));
   });
   /* 보이는 슬라이드 안의 시뮬레이션만 그린다 (숨겨진 캔버스는 크기가 0) */
   const renderIn = (slide) => slide.querySelectorAll('[data-sim]').forEach(render);
 
-  return { define, markup, wire, renderIn };
+  return { define, markup, wire, renderIn, enter, step };
 })();
 </script>
-<script>
-/* 시뮬레이션 네 개의 설정. 숫자(기본 인구, α 등)는 각 블록 맨 위에서 고친다.
+    <script>
+/* 시뮬레이션 두 개의 설정. 숫자(기본 인구, α 등)는 각 블록 맨 위에서 고친다.
    왼쪽 글은 content/slides.js에 있다. */
 (() => {
   const { nStar, deltaZ, runMany, mean, group, people, percent } = Model;
@@ -427,7 +516,7 @@ window.Sims = (() => {
     else ui.status("겨우 유지");
   };
 
-  /* A, C, D가 함께 쓰는 '세대별 숙련도' 그래프 */
+  /* 원리와 참사 시뮬레이션이 함께 쓰는 '세대별 숙련도' 그래프 */
   const levelChart = ({ gens, xTicks, runs, main, floor, ...rest }) => {
     const yMax = Chart.niceMax(Math.max(floor, ...runs.flat()));
     return {
@@ -456,7 +545,7 @@ window.Sims = (() => {
           min: 1,
           max: 5,
           step: 0.01,
-          value: 2.5,
+          value: 2,
           read: fromLog10,
           show: peopleExact,
         },
@@ -472,9 +561,14 @@ window.Sims = (() => {
       ],
       readouts: [{ key: "nstar", label: "임계 인구 N*" }],
       status: true,
+      // 100명(퇴보) → N* 근처 약 600명(겨우 유지) → 1만 명(발전). n은 log10 값
+      steps: [
+        { n: 2, alpha: 7 },
+        { n: 2.79, alpha: 7 },
+        { n: 4, alpha: 7 },
+      ],
       render({ n, alpha }, ui) {
         const dz = deltaZ(alpha, n);
-        ui.set("nstar", people(nStar(alpha)));
         trend(ui, dz);
         const runs = runMany(RUNS, 11, {
           gens: GENS,
@@ -499,190 +593,75 @@ window.Sims = (() => {
     });
   }
 
-  /* ---------- 복잡도 대 임계 인구 (질문 1) ---------- */
+  /* ---------- 반복되는 참사 (질문 1) ----------
+     EVERY세대마다 참사가 인구를 cut만큼 줄인다. 그사이 출산율 TFR로 인구가 늘지만 거주지 한계(START_POP)를 넘지 못한다.
+     참사가 작으면 회복이 따라잡고, 크면 인구가 점점 줄어든다.
+     인구가 임계 인구 N* 아래로 내려가면 기술이 줄기 시작하고, 0이 되면 가르칠 사람이 없어 되살아나지 않는다. */
   {
-    const BOOK = [
-      // 기술 기준 추정치만 싣는다. 유전 기준(98명 등)은 다른 질문의 답이라 이 곡선에 올리지 않는다.
-      { n: 1e5, name: "낮은 쪽 10만 명", page: 513 },
-      { n: 1e6, name: "핸드머 100만 명", page: 512 },
-      { n: 1e8, name: "스트로스 1억 명", page: 512 },
-      { n: 1e9, name: "스트로스 10억 명", page: 512, align: "left" }, // 오른쪽에 두면 곡선과 겹친다
-    ];
-    const A_MIN = 2,
-      A_MAX = 24;
-    const TICKS = [
-      [1, "1"],
-      [1e2, "100"],
-      [1e4, "1만"],
-      [1e6, "100만"],
-      [1e8, "1억"],
-      [1e10, "100억"],
-    ];
-    const curve = [];
-    for (let a = A_MIN; a <= A_MAX + 0.001; a += 0.2) curve.push([a, nStar(a)]);
-
-    Sims.define("complexity", {
-      controls: [
-        {
-          key: "alpha",
-          label: "기술 복잡도 α",
-          min: A_MIN,
-          max: A_MAX,
-          step: 0.1,
-          value: 14,
-          show: fixed1,
-        },
-      ],
-      readouts: [{ key: "nstar", label: "필요한 인구 N*" }],
-      note: "음영: 헨릭 Figure 2가 그린 범위(α/β 4~9). 그 오른쪽은 내가 늘려 본 구간.",
-      render({ alpha }, ui) {
-        const ns = nStar(alpha);
-        ui.set("nstar", people(ns));
-        ui.chart({
-          xMin: A_MIN,
-          xMax: A_MAX,
-          yMin: 1,
-          yMax: 3e10,
-          log: true,
-          xTicks: [4, 8, 12, 16, 20, 24],
-          yTicks: TICKS.map(([v]) => v),
-          yFmt: (v) => TICKS.find(([x]) => x === v)[1],
-          xLabel: "기술 복잡도 α",
-          yLabel: "임계 인구 (로그 눈금)",
-          bands: [{ from: 4, to: 9 }],
-          hlines: BOOK.map((b) => ({
-            y: b.n,
-            label: `${b.name} (${b.page})`,
-            align: b.align,
-          })),
-          main: curve,
-          dot: { x: alpha, y: ns },
-        });
-      },
-    });
-  }
-
-  /* ---------- 참사와 골든타임 (질문 2) ---------- */
-  {
-    const BASE = 6000,
-      ALPHA = 9,
+    const START_POP = 10000,
+      ALPHA = 9.2, // 임계 인구 약 5,560명
+      TFR = 2.1,
+      EVERY = 6,
       GENS = 60,
-      HIT = 10,
       TRIALS = 40,
       SHOWN = 14;
-    const critical = Math.round(nStar(ALPHA) / 50) * 50;
+    const critical = nStar(ALPHA);
+    // 세대별 인구. 세대마다 출산율/2를 곱하되 거주지 한계를 넘지 않고, EVERY세대마다 참사로 줄인다.
+    const popSeries = (cut) => {
+      const out = [];
+      let p = START_POP;
+      for (let t = 0; t <= GENS; t++) {
+        if (t > 0) {
+          p = Math.min(START_POP, (p * TFR) / 2);
+          if (t % EVERY === 0) p *= 1 - cut;
+        }
+        out.push(Math.max(2, Math.round(p)));
+      }
+      return out;
+    };
     Sims.define("catastrophe", {
       controls: [
         {
           key: "cut",
-          label: "참사 규모",
+          label: `참사 규모 (${EVERY}세대마다)`,
           min: 0,
-          max: 80,
-          step: 5,
-          value: 60,
+          max: 50,
+          step: 1, // 1% 단위여야 발표 단계로 넘길 때 슬라이더가 부드럽게 움직인다
+          value: 20,
           read: (v) => v / 100,
           show: percent,
-        },
-        {
-          key: "rec",
-          label: "인구 회복까지",
-          min: 1,
-          max: 40,
-          step: 1,
-          value: 16,
-          show: (v) => v + "세대",
         },
       ],
       readouts: [
-        { key: "after", label: "참사 뒤 인구" },
+        { key: "end", label: `${GENS}세대 뒤 인구` },
         { key: "lost", label: `영구 소실 (${TRIALS}회 중)` },
       ],
       status: true,
-      note: `평소 인구 ${group(BASE)}명, α = ${ALPHA}, 임계 인구 약 ${group(
-        critical
+      // 20%(인구 회복, 0% 소실) → 30%(인구 약 3,900명, 3% 소실) → 40%(인구 약 840명, 100% 소실)
+      steps: [{ cut: 20 }, { cut: 30 }, { cut: 40 }],
+      note: `인구 ${group(START_POP)}명(거주지 한계), 출산율 ${TFR}, α = ${ALPHA}, 임계 인구 약 ${group(
+        Math.round(critical / 10) * 10
       )}명`,
-      render({ cut, rec }, ui) {
-        const after = Math.max(2, Math.round(BASE * (1 - cut)));
-        const pop = (t) => (t >= HIT && t < HIT + rec ? after : BASE);
-        const all = runMany(TRIALS, 101, { gens: GENS, pop, alpha: ALPHA });
+      render({ cut }, ui) {
+        const pops = popSeries(cut);
+        const all = runMany(TRIALS, 101, { gens: GENS, pop: (t) => pops[t], alpha: ALPHA });
         const frac = all.filter((r) => r[GENS] === 0).length / TRIALS;
         const runs = all.slice(0, SHOWN); // 그래프에는 일부만 그린다
-        ui.set("after", people(after));
+        ui.set("end", people(pops[GENS]));
         ui.set("lost", percent(frac));
-        if (frac < 0.1) ui.status("회복");
+        if (frac < 0.1) ui.status("지킴");
         else if (frac < 0.6) ui.status("운에 달림");
         else ui.status("영구 소실", true);
+        // 인구가 임계 인구 아래로 내려간 뒤를 음영으로 표시한다
+        const below = pops.findIndex((p) => p < critical);
         ui.chart(
           levelChart({
             gens: GENS,
             xTicks: [0, 10, 20, 30, 40, 50, 60],
             runs,
             main: mean(runs),
-            floor: 20,
-            bands: [
-              { from: HIT, to: Math.min(GENS, HIT + rec), label: "인구 감소" },
-            ],
-          })
-        );
-      },
-    });
-  }
-
-  /* ---------- 지구와 단절, AI 몫 (질문 3) ---------- */
-  {
-    const ALPHA = 9,
-      GENS = 60,
-      CUT_AT = 20,
-      EARTH = 30,
-      RUNS = 8;
-    Sims.define("ai", {
-      controls: [
-        {
-          key: "ai",
-          label: "AI가 보존하는 몫",
-          min: 0,
-          max: 80,
-          step: 5,
-          value: 0,
-          read: (v) => v / 100,
-          show: percent,
-        },
-        {
-          key: "n",
-          label: "정착지 인구",
-          min: 2.3,
-          max: 4.5,
-          step: 0.01,
-          value: 3,
-          read: fromLog10,
-          show: peopleExact,
-        },
-      ],
-      readouts: [{ key: "nstar", label: "임계 인구 N*" }],
-      status: true,
-      note: `α = ${ALPHA}. ${CUT_AT}세대 뒤 지구와 단절. AI 몫은 이 발표의 가정.`,
-      render({ ai, n }, ui) {
-        const effective = ALPHA * (1 - ai);
-        ui.set("nstar", people(nStar(effective)));
-        trend(ui, deltaZ(effective, n));
-        const runs = runMany(RUNS, 201, {
-          gens: GENS,
-          pop: () => n,
-          alpha: ALPHA,
-          ai,
-          start: EARTH,
-          link: (t) => t < CUT_AT,
-          earth: EARTH,
-        });
-        ui.chart(
-          levelChart({
-            gens: GENS,
-            xTicks: [0, 10, 20, 30, 40, 50, 60],
-            runs,
-            main: mean(runs),
-            floor: 60,
-            bands: [{ from: 0, to: CUT_AT, label: "지구와 연결" }],
-            hlines: [{ y: EARTH, label: "지구 수준", align: "right" }],
+            floor: 100, // 슬라이더 범위(0~50%)에서 숙련도 최댓값이 약 64라 세로축이 100으로 고정된다
+            bands: below < 0 ? [] : [{ from: below, to: GENS, label: "인구 < 임계 인구" }],
           })
         );
       },
@@ -690,11 +669,12 @@ window.Sims = (() => {
   }
 })();
 </script>
-<script>
+    <script>
 /* 발표 내용 전부. 글을 고칠 때는 이 파일만 보면 된다.
    - 슬라이드 순서 = 아래 목록 순서. 옮기거나 지워도 쪽 번호는 자동으로 맞는다.
    - 글 안에서 <b>굵게</b>, <span class="accent">강조색</span> 을 쓸 수 있다.
    - 부품 설명은 js/ui.js에, 시뮬레이션 숫자는 content/sims.js에 있다.
+   - 흐름과 이유는 17장_발표/발표_계획서.md에 있다.
 
    슬라이드 항목:
      sec    왼쪽 아래 구역 이름
@@ -746,17 +726,19 @@ window.Sims = (() => {
           col({
             label: "유전",
             title: "근친 교배를 피하려면 최소 몇 명이 필요할까?",
+            text: "머릿수가 아닌 유효 인구 기준 (505–510쪽)",
           }),
           col({
             label: "기술",
             title: "지구 도움 없이 기술 문명을 유지하려면 몇 명이 필요할까?",
+            text: "지구에서 아무것도 들여오지 않는 자급자족 기준 (511–513쪽)",
           }),
         ]),
       ],
     },
     {
       sec: SUMMARY,
-      ref: "507–512쪽",
+      ref: "507–513쪽",
       title: "추정치의 범위",
       body: [
         ladder({
@@ -817,6 +799,31 @@ window.Sims = (() => {
             ],
           },
         }),
+        p(`실제 병목은 유전이 아닌 ${accent("자급자족")}`),
+      ],
+    },
+    {
+      sec: SUMMARY,
+      ref: "511–513쪽",
+      title: "자급자족에 많은 인구가 필요한 이유",
+      body: [
+        cols(3, [
+          col({
+            label: "511–512쪽",
+            title: "쿠바, 북한",
+            text: "쿠바 1,100만 명, 북한 2,600만 명. 공기, 바다, 흙까지 있어도 자급 실패. 화성은 이보다 불리한 조건.",
+          }),
+          col({
+            label: "512쪽",
+            title: "반도체",
+            text: "80억 명이 쓰는 최첨단 칩의 제조사는 세 곳뿐. 막대한 비용, 물, 전문 인력 필요.",
+          }),
+          col({
+            label: "512–513쪽",
+            title: "로봇 전제",
+            text: "핸드머의 100만 명도 로봇 수준에 따라 ±10배.",
+          }),
+        ]),
       ],
     },
     {
@@ -838,86 +845,70 @@ window.Sims = (() => {
       ref: "나의 판단",
       title: "조건부로 받아들인다",
       body: [
+        p(
+          `<b>저자의 주장</b>&ensp;유전보다 자급자족 때문에 매우 많은 인구가 필요 → 화성은 가까운 미래의 플랜&nbsp;B가 될 수 없음`
+        ),
         cols(3, [
           col({ label: "동의", text: "사람이 아주 많이 필요하다는 결론." }),
           col({
-            label: "더 볼 부분",
-            text: "왜 하필 사람 수인지는 책에서 짧게만 다룬다.",
+            label: "보완할 근거",
+            text: "기술 쪽 숫자(10만~10억 명)는 유전 쪽만큼 따져서 나온 숫자가 아님.",
           }),
           col({
             label: "판단이 뒤집힐 때",
-            text: "노하우 대부분을 문서나 AI에 옮길 수 있다면 훨씬 적은 인원으로도 된다.",
+            text: "기술 쪽도 유전 쪽만큼 따져 봤는데 필요 인구가 오히려 작아진다면.",
           }),
         ]),
+      ],
+    },
+    {
+      sec: ANALYSIS,
+      ref: "505–512쪽",
+      title: `유전은 세 가지를 따졌고, 기술은 ${accent("머릿수만")} 셌다`,
+      body: [
+        table({
+          head: [["따진 것", "18%"], ["유전 쪽에서는", "44%"], ["기술 쪽에서는"]],
+          rows: [
+            [
+              "<b>참사</b>",
+              "인구 30%가 줄어드는 참사를 모델에 넣음 (508)",
+              "넣지 않음",
+            ],
+            [
+              "<b>유효 인구</b>",
+              "머릿수 대신 유효 인구를 셈. 남학생만 10만 명이면 유효 인구 0명 (505)",
+              "머릿수만 셈 (512)",
+            ],
+            [
+              "<b>선택의 자유</b>",
+              '결혼과 출산을 통제해 숫자를 줄이는 방식은 거부. "스스로 선택할 수 있을 만큼" (509–510)',
+              "누가 무엇을 배우고 맡을지는 다루지 않음",
+            ],
+          ],
+        }),
       ],
     },
     {
       sec: ANALYSIS,
       ref: "511–513쪽",
-      title: "저자의 근거?",
+      title: "저자의 근거 검토",
       body: [
         table({
-          head: [
-            ["근거", "20%"],
-            ["보여 주는 것"],
-            ["따져 볼 점"],
-            ["평가", "9%"],
-          ],
+          head: [["검토 질문", "28%"], ["근거", "24%"], ["판단"]],
           rows: [
             [
+              "유추가 결론에 필요한 지점에서도 비슷한가?",
               "쿠바, 북한 (511–512)",
-              "천만 명이 넘어도 자급을 못 한다",
-              "인구 탓인지 정책, 제재 탓인지 구분이 안 된다",
-              "약함",
+              "자급 실패의 원인이 인구인지, 정책이나 제재인지 구분 불가",
             ],
             [
-              "반도체 (512)",
-              "80억 명이 쓰는 최첨단 칩을 세 곳이 만든다",
-              "생존에 최첨단 칩까지 필요한지는 따로 봐야 한다",
-              "강함",
-            ],
-            [
-              "재활용 (513)",
-              "99%를 재활용해도 50년이면 약 40%를 잃는다",
-              "우주정거장 얘기고, 인구와는 별개다",
-              "보조",
+              "확신이 근거에 비례하는가?",
+              "스트로스 (512), 안드로이드 마흔 대 (513)",
+              "SF 작가의 추정을 근거 없이 '더 그럴듯하다'고 평가. 낮은 추정치의 로봇 전제는 농담으로 처리",
             ],
           ],
         }),
-        statement("가리키는 방향은 같은데, 숫자의 크기는 유추에 기대고 있다."),
-      ],
-    },
-    {
-      sec: ANALYSIS,
-      ref: "509–512쪽",
-      body: [
-        center([
-          `<h1 class="headline">유전자는 ${accent(
-            "1g"
-          )}이면 되는데,<br>기술은 왜 ${accent("100만 명")}이 필요할까?</h1>`,
-          small(
-            "동결 생식세포로 숫자를 줄여도, 강제하면 윤리적인 정착은 어렵다 (510쪽)"
-          ),
-        ]),
-      ],
-    },
-    {
-      sec: ANALYSIS,
-      ref: "508, 513쪽",
-      title: "책에 이미 있는 힌트",
-      body: [
-        cols(2, [
-          col({
-            label: "508쪽",
-            title: "부족이 작아도 이웃과 혼인하면 실제 규모는 수천 명",
-            text: "기술도 서로 배우는 사람까지 세어야 한다면?",
-          }),
-          col({
-            label: "513쪽",
-            title: "물질은 매년 1%씩 새서 50년이면 약 40%가 사라진다",
-            text: "기술도 가르칠 때마다 조금씩 샌다면?",
-          }),
-        ]),
+        statement("방향은 타당. 다만 기술 쪽 숫자는 근거가 약함."),
       ],
     },
     {
@@ -962,69 +953,22 @@ window.Sims = (() => {
         ]),
       ],
     },
-    {
-      sec: ANALYSIS,
-      ref: "508–513쪽",
-      body: [
-        table({
-          head: [["받아들이기 전에 확인할 것"], ["쪽", "14%"], ["", "10%"]],
-          rows: [
-            [
-              "기술 추정치가 10만~10억 명으로 벌어지는 건 어떤 가정 때문일까?",
-              "512–513",
-              "질문 1",
-            ],
-            [
-              "유전 모델에 쓴 30% 참사 가정을 기술에 적용하면 어떻게 될까?",
-              "508",
-              "질문 2",
-            ],
-            [
-              "낮은 추정치가 전제하는 로봇을 AI로 보면 어디까지 대신할 수 있을까?",
-              "512–513",
-              "질문 3",
-            ],
-          ],
-        }),
-      ],
-    },
 
     /* ===== 질문 ===== */
-    {
-      sec: QUESTION,
-      ref: "512–513쪽",
-      body: [
-        simSlide("complexity", [
-          questionLabel("질문 1"),
-          question(
-            "기술 쪽 추정치가 10만 명에서 10억 명까지 벌어지는 건 어떤 가정 때문일까?"
-          ),
-          p(
-            `10만 명과 10억 명은 α가 <b>${Math.log(1e9 / 1e5).toFixed(
-              1
-            )}</b> 밖에 차이나지 않음 </br> => 숫자가 기술에 굉장히 민감함`
-          ),
-          params([
-            ["α", "기술이 어려운 정도"],
-            ["N*", "그 기술을 지키는 데 필요한 인원"],
-          ]),
-          small("Henrich (2004), Hidalgo (2015) '퍼슨바이트'"),
-        ]),
-      ],
-    },
     {
       sec: QUESTION,
       ref: "508쪽",
       body: [
         simSlide("catastrophe", [
-          questionLabel("질문 2"),
+          questionLabel("질문 1"),
           question(
-            "인구 30%가 줄어드는 참사 뒤에 유전자는 회복돼도, 기술은 끝내 못 돌아오는 경우가 있지 않을까?"
+            "인구 30%가 줄어드는 참사 뒤에 인구는 회복돼도, 기술은 끝내 못 돌아오는 경우가 있지 않을까?"
           ),
-          p("인구의 보존과 기술의 보존이 '둘 다' 이루어져야하지 않을까?"),
+          p("책은 30% 참사를 유전 계산에만 넣었다."),
           params([
-            ["참사 규모", "한 번에 줄어드는 인구 비율"],
-            ["회복까지", "인구가 다시 늘 때까지 걸리는 세대 수"],
+            ["참사 규모", "6세대마다 한 번, 줄어드는 인구 비율"],
+            ["출산율 2.1", "참사 사이에 인구가 조금씩 회복됨 (최대 10,000명)"],
+            ["임계 인구", "이 기술을 지키는 데 필요한 인원 (약 5,560명)"],
           ]),
           small("스미스의 참사 가정(508), Henrich (2004), 시뮬레이션"),
         ]),
@@ -1032,48 +976,83 @@ window.Sims = (() => {
     },
     {
       sec: QUESTION,
-      ref: "512–513쪽",
+      ref: "512쪽",
       body: [
-        simSlide("ai", [
-          questionLabel("질문 3"),
-          question(
-            "말로 옮길 수 있는 지식을 AI가 다 보존하면 필요한 인구는 얼마나 줄까? 말로 못 옮기는 지식은 어디서 한계를 만들까?"
-          ),
-          params([
-            ["AI 몫", "전수 손실 α 중 AI가 막아 주는 비율"],
-            ["인구", "지구와 끊긴 뒤 정착지에 남은 사람 수"],
-          ]),
-          small("Autor (2014) 폴라니의 역설, 핸드머의 로봇 오차 ±10배(512)"),
-        ]),
-      ],
-    },
-
-    /* ===== 생각거리 ===== */
-    {
-      sec: ESSAY,
-      ref: "512쪽, Henrich (2004)",
-      title: `화성에 1,000명을 보낸다면, ${accent("최고 전문가")}와 ${accent(
-        "서로 잘 가르치는 평범한 사람"
-      )} 중 누구를 보낼까?`,
-      body: [
+        questionLabel("질문 2"),
+        question(
+          `분업이 깊어질수록 기술 하나를 배우는 사람은 줄어든다. 작은 정착지에서 분업은 ${accent(
+            "득일까 실일까?"
+          )}`
+        ),
         cols(2, [
           col({
             label: "512쪽",
-            text: "반도체를 만들려면 전문 인력이 많이 필요하다.",
+            title: "반도체",
+            text: "전문 인력이 많아야 만들 수 있다. 분업이 깊어야 가능한 기술",
           }),
           col({
-            label: "태즈메이니아",
-            text: "배우는 사람이 줄자 복잡한 기술이 사라졌다.",
+            label: "Henrich (2004)",
+            title: "태즈메이니아",
+            text: "배우는 사람이 800명 남짓으로 줄자 복잡한 기술부터 사라졌다",
           }),
         ]),
+        small(
+          "답에 필요한 근거: 분업의 깊이와 기술 유지의 관계를 다룬 연구, Hidalgo (2015) '퍼슨바이트'"
+        ),
+      ],
+    },
+    {
+      sec: QUESTION,
+      ref: "509–510쪽",
+      body: [
+        questionLabel("질문 3"),
+        question(
+          `필요 인구를 '살아남는 최소'가 아니라 ${accent(
+            "'결혼, 출산, 직업을 스스로 고를 수 있는 최소'"
+          )}로 정하면, 추정치는 얼마나 달라질까?`
+        ),
+        cols(2, [
+          col({
+            label: "509쪽",
+            title: "98명",
+            text: "결혼 상대와 출산을 컴퓨터가 정하는 조건에서만 가능한 숫자",
+          }),
+          col({
+            label: "510쪽",
+            title: "저자의 결론",
+            text: '"개인이 스스로 선택할 수 있을 만큼 자원이 확보될 때까지 기다리는 편이 낫다"',
+          }),
+        ]),
+        small(
+          "답에 필요한 근거: HERITAGE 모델과 자유 혼인을 가정한 모델의 비교, 직업 선택까지 넣은 기술 유지 모델"
+        ),
       ],
     },
 
-    /* ===== 마무리 ===== */
+    /* ===== 생각거리 (에세이를 쓰는 동안 띄워 둔다) ===== */
     {
+      sec: ESSAY,
+      ref: "505–512쪽",
+      title: `화성 정착지에 1,000명만 태울 수 있다면,<br>${accent(
+        "누구를 먼저"
+      )} 태워야 할까?`,
       body: [
-        center([
-          "<h2>화성이 플랜 B가 되려면,<br>기술을 서로 가르칠 사람이 그만큼 있어야 한다</h2>",
+        cols(3, [
+          col({
+            label: "512쪽",
+            title: "지금 필요한 전문가",
+            text: "의사, 엔지니어, 기술자. 반도체 같은 기술은 전문 인력이 많아야 유지된다.",
+          }),
+          col({
+            label: "505–508쪽",
+            title: "다음 세대를 이을 젊은 사람",
+            text: "출산할 수 있는 나이의, 유전적으로 다양한 사람들. 유효 인구가 정착지의 수명을 정한다.",
+          }),
+          col({
+            label: "Henrich (2004)",
+            title: "잘 가르치는 사람",
+            text: "교사와 숙련공. 배우는 사람이 줄면 복잡한 기술부터 사라진다.",
+          }),
         ]),
       ],
     },
@@ -1084,7 +1063,7 @@ window.Sims = (() => {
   ];
 })();
 </script>
-<script>
+    <script>
 /* 슬라이드 만들기, 이동, 화면 맞춤. 내용은 content/slides.js에 있다. */
 (() => {
   const STAGE_W = 1600, STAGE_H = 900, MARGIN = 0.97;
@@ -1114,17 +1093,23 @@ window.Sims = (() => {
   Sims.wire(stage);
 
   /* ---------- 이동 ---------- */
-  let cur = 0;
+  let cur = -1;
 
-  function show(i) {
+  /* dir: -1이면 뒤에서 들어온 것. 시뮬레이션을 마지막 단계로 맞춘다 (js/sim-kit.js) */
+  function show(i, dir = 0) {
     if (document.activeElement && document.activeElement.type === 'range') document.activeElement.blur();
+    const prev = cur;
     cur = Math.max(0, Math.min(total - 1, i));
     slides.forEach((s, j) => s.classList.toggle('on', j === cur));
+    if (cur !== prev) Sims.enter(slides[cur], dir < 0);
     document.getElementById('cnt').textContent = (cur + 1) + ' / ' + total;
     if (location.hash !== '#s' + (cur + 1)) history.replaceState(null, '', '#s' + (cur + 1));
     redraw();
   }
   const redraw = () => Sims.renderIn(slides[cur]);
+
+  /* 다음/이전: 시뮬레이션 단계가 남아 있으면 단계부터 넘긴다 */
+  const go = (dir) => { if (!Sims.step(slides[cur], dir)) show(cur + dir, dir); };
 
   function fromHash() {
     const m = /^#s(\d+)$/.exec(location.hash);
@@ -1141,8 +1126,8 @@ window.Sims = (() => {
     if (p && p.catch) p.catch(() => {});
   }
 
-  document.getElementById('prev').addEventListener('click', () => show(cur - 1));
-  document.getElementById('next').addEventListener('click', () => show(cur + 1));
+  document.getElementById('prev').addEventListener('click', () => go(-1));
+  document.getElementById('next').addEventListener('click', () => go(1));
   document.getElementById('fs').addEventListener('click', toggleFullscreen);
 
   document.addEventListener('keydown', (e) => {
@@ -1151,8 +1136,8 @@ window.Sims = (() => {
     // 슬라이더에서 ←→는 값 조절, 버튼에서 스페이스는 버튼 누르기. 발표 리모컨의 PageUp/Down은 항상 넘긴다.
     if (onSlider && e.key.startsWith('Arrow')) return;
     if (onButton && e.key === ' ') return;
-    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(cur + 1); }
-    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
     if (e.key === 'Home') show(0);
     if (e.key === 'End') show(total - 1);
   });
@@ -1169,7 +1154,7 @@ window.Sims = (() => {
     if (wheelLocked) return;
     wheelSum += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (Math.abs(wheelSum) >= WHEEL_THRESHOLD) {
-      show(cur + (wheelSum > 0 ? 1 : -1));
+      go(wheelSum > 0 ? 1 : -1);
       wheelLocked = true;
     }
   }, { passive: false });
@@ -1184,7 +1169,7 @@ window.Sims = (() => {
     if (!swipe || swipe.id !== e.pointerId) return;
     const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
     swipe = null;
-    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
   });
   window.addEventListener('pointercancel', () => { swipe = null; });
 
@@ -1209,5 +1194,5 @@ window.Sims = (() => {
   show(fromHash());
 })();
 </script>
-</body>
+  </body>
 </html>

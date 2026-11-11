@@ -27,17 +27,23 @@
   Sims.wire(stage);
 
   /* ---------- 이동 ---------- */
-  let cur = 0;
+  let cur = -1;
 
-  function show(i) {
+  /* dir: -1이면 뒤에서 들어온 것. 시뮬레이션을 마지막 단계로 맞춘다 (js/sim-kit.js) */
+  function show(i, dir = 0) {
     if (document.activeElement && document.activeElement.type === 'range') document.activeElement.blur();
+    const prev = cur;
     cur = Math.max(0, Math.min(total - 1, i));
     slides.forEach((s, j) => s.classList.toggle('on', j === cur));
+    if (cur !== prev) Sims.enter(slides[cur], dir < 0);
     document.getElementById('cnt').textContent = (cur + 1) + ' / ' + total;
     if (location.hash !== '#s' + (cur + 1)) history.replaceState(null, '', '#s' + (cur + 1));
     redraw();
   }
   const redraw = () => Sims.renderIn(slides[cur]);
+
+  /* 다음/이전: 시뮬레이션 단계가 남아 있으면 단계부터 넘긴다 */
+  const go = (dir) => { if (!Sims.step(slides[cur], dir)) show(cur + dir, dir); };
 
   function fromHash() {
     const m = /^#s(\d+)$/.exec(location.hash);
@@ -54,8 +60,8 @@
     if (p && p.catch) p.catch(() => {});
   }
 
-  document.getElementById('prev').addEventListener('click', () => show(cur - 1));
-  document.getElementById('next').addEventListener('click', () => show(cur + 1));
+  document.getElementById('prev').addEventListener('click', () => go(-1));
+  document.getElementById('next').addEventListener('click', () => go(1));
   document.getElementById('fs').addEventListener('click', toggleFullscreen);
 
   document.addEventListener('keydown', (e) => {
@@ -64,8 +70,8 @@
     // 슬라이더에서 ←→는 값 조절, 버튼에서 스페이스는 버튼 누르기. 발표 리모컨의 PageUp/Down은 항상 넘긴다.
     if (onSlider && e.key.startsWith('Arrow')) return;
     if (onButton && e.key === ' ') return;
-    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(cur + 1); }
-    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(cur - 1); }
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
     if (e.key === 'Home') show(0);
     if (e.key === 'End') show(total - 1);
   });
@@ -82,7 +88,7 @@
     if (wheelLocked) return;
     wheelSum += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (Math.abs(wheelSum) >= WHEEL_THRESHOLD) {
-      show(cur + (wheelSum > 0 ? 1 : -1));
+      go(wheelSum > 0 ? 1 : -1);
       wheelLocked = true;
     }
   }, { passive: false });
@@ -97,7 +103,7 @@
     if (!swipe || swipe.id !== e.pointerId) return;
     const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
     swipe = null;
-    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
   });
   window.addEventListener('pointercancel', () => { swipe = null; });
 

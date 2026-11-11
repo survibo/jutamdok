@@ -14,7 +14,7 @@ window.Chart = (() => {
 
   /* o: { xMin, xMax, yMin, yMax, log, xTicks, yTicks, yFmt, xLabel, yLabel,
           bands: [{from,to,label}], hlines: [{y,label,align}],
-          faint: [[y...]...] 세대별 시행들, main: [[x,y]...] 대표선, dot: {x,y} } */
+          faint: [[y...]...] 세대별 시행들, others: 비교용 선, xFmt: x 눈금 글자, main: [[x,y]...] 대표선, dot: {x,y} } */
   function draw(canvas, o) {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
@@ -57,7 +57,11 @@ window.Chart = (() => {
       g.fillText(o.yFmt ? o.yFmt(v) : v, L - 10, y);
     });
     g.textBaseline = 'top'; g.textAlign = 'center';
-    o.xTicks.forEach((v) => { g.fillText(v, X(v), T + ph + 8); });
+    o.xTicks.forEach((v) => {
+      const label = String(o.xFmt ? o.xFmt(v) : v);
+      const half = g.measureText(label).width / 2;
+      g.fillText(label, Math.min(X(v), w - half), T + ph + 8); // 오른쪽 끝 글자가 잘리지 않게
+    });
     g.textAlign = 'right'; g.fillText(o.xLabel, L + pw, T + ph + 32);
     g.textAlign = 'left'; g.fillText(o.yLabel, L, T + ph + 32);
 
@@ -69,6 +73,12 @@ window.Chart = (() => {
       g.fillText(hl.label, hl.align === 'left' ? L + 8 : L + pw - 4, y - 4);
     });
 
+    // 비교용 회색 선: [{ pts: [[x,y]...], label }] 왼쪽 시작점 위에 이름을 단다 (오른쪽은 기준선 이름 자리)
+    (o.others || []).forEach((ln) => {
+      path(ln.pts, gray, 1.2, 0.45);
+      const [x, y] = ln.pts[0];
+      if (ln.label) { g.fillStyle = gray; g.textAlign = 'left'; g.textBaseline = 'bottom'; g.fillText(ln.label, X(x) + 6, Y(y) - 4); }
+    });
     (o.faint || []).forEach((r) => path(r.map((y, t) => [t, y]), gray, 1.2, 0.3));
     if (o.main) path(o.main, accent, 3);
 

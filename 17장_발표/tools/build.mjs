@@ -9,7 +9,8 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const html = read('index.html')
-  .replace(/<link rel="stylesheet" href="((?!https?:)[^"]+)">/g, (_, f) => `<style>\n${read(f)}</style>`)
+  // 줄바꿈이나 " />" 꼴(코드 정리 도구가 바꾼 모양)도 받아들인다
+  .replace(/<link\s+rel="stylesheet"\s+href="((?!https?:)[^"]+)"\s*\/?>/g, (_, f) => `<style>\n${read(f)}</style>`)
   // 함수 형태로 넘겨야 파일 안의 $ 기호가 치환 패턴으로 해석되지 않는다
   .replace(/<script src="([^"]+)"><\/script>/g, (_, f) => `<script>\n${read(f).replace(/<\/script/gi, '<\\/script')}</script>`);
 
