@@ -161,7 +161,7 @@ table.t.compact { font-size: 21px; }
 
 /* 슬라이드 오른쪽 위의 논문 이미지 (참고용으로 작게) */
 .paper { position: absolute; top: 80px; right: 100px; width: 250px; border: 1px solid var(--line); }
-.with-paper > .cols, .with-paper > .statement { margin-right: 300px; }
+.with-paper > .cols, .with-paper > .statement, .with-paper > .small { margin-right: 300px; }
 </style>
   </head>
   <body>
@@ -249,18 +249,14 @@ window.Model = (() => {
   const nStar = (alpha, beta = 1) => Math.exp(alpha / beta - GAMMA);
   const deltaZ = (alpha, n, beta = 1) => -alpha + beta * (GAMMA + Math.log(n));
 
-  /* 한 번의 시행. pop(t): t세대 인구, link(t): 지구와 연결 여부, earth: 지구 수준, ai: AI가 맡는 몫 */
-  function run({ gens, pop, alpha, beta = 1, ai = 0, start = 10, link = () => false, earth = 30, seed = 1 }) {
+  /* 한 번의 시행. pop(t): t세대에 배우는 사람 수.
+     숙련도가 0이 되면 그 기술을 아는 사람이 없으므로 그 뒤로는 0에 머문다(가정). */
+  function run({ gens, pop, alpha, beta = 1, start = 10, seed = 1 }) {
     const r = rng(seed);
-    const a = alpha * (1 - ai);
     const out = [start];
-    let b = start, extinct = false;
+    let b = start;
     for (let t = 0; t < gens; t++) {
-      const linked = link(t);
-      if (extinct && !linked) { out.push(0); continue; } // 가르칠 사람이 없으면 되살아나지 않는다
-      const teacher = linked ? Math.max(b, earth) : b;
-      b = teacher - a + beta * Math.log(pop(t)) + gumbel(r, beta);
-      if (b <= 0) { b = 0; extinct = true; } else extinct = false;
+      if (b > 0) b = Math.max(0, b - alpha + beta * Math.log(pop(t)) + gumbel(r, beta));
       out.push(b);
     }
     return out;
@@ -269,21 +265,10 @@ window.Model = (() => {
   /* 시드를 하나씩 바꿔 여러 번 돌린다 */
   const runMany = (count, firstSeed, opts) => Array.from({ length: count }, (_, k) => run({ ...opts, seed: firstSeed + k }));
 
-  /* 세대별 평균: [[세대, 평균]...] */
-  const mean = (runs) => runs[0].map((_, t) => [t, runs.reduce((s, r) => s + r[t], 0) / runs.length]);
-
   /* ---------- 숫자 표기 ---------- */
   const group = (n) => n.toLocaleString('ko-KR');
-  function people(n) {
-    if (!isFinite(n)) return '∞';
-    if (n < 1) return '1명 미만';
-    if (n < 1e4) return group(Math.round(n)) + '명';
-    const [v, unit] = n < 1e8 ? [n / 1e4, '만 명'] : [n / 1e8, '억 명'];
-    return (v < 100 ? v.toFixed(1).replace(/\.0$/, '') : group(Math.round(v))) + unit;
-  }
-  const percent = (x) => Math.round(x * 100) + '%';
 
-  return { nStar, deltaZ, run, runMany, mean, group, people, percent };
+  return { nStar, deltaZ, run, runMany, group };
 })();
 </script>
     <script>
@@ -501,10 +486,10 @@ window.Sims = (() => {
 })();
 </script>
     <script>
-/* 시뮬레이션 두 개의 설정. 숫자(기본 인구, α 등)는 각 블록 맨 위에서 고친다.
+/* 시뮬레이션 설정. 숫자(기본 인구, α 등)는 각 블록 맨 위에서 고친다.
    왼쪽 글은 content/slides.js에 있다. */
 (() => {
-  const { nStar, deltaZ, runMany, mean, group, people, percent } = Model;
+  const { nStar, deltaZ, runMany, group } = Model;
   const fixed1 = (x) => x.toFixed(1);
   const fromLog10 = (v) => Math.round(Math.pow(10, v)); // 인구 슬라이더는 로그 눈금
   const peopleExact = (n) => group(n) + "명";
@@ -516,7 +501,7 @@ window.Sims = (() => {
     else ui.status("겨우 유지");
   };
 
-  /* 원리와 참사 시뮬레이션이 함께 쓰는 '세대별 숙련도' 그래프 */
+  /* '세대별 숙련도' 그래프 */
   const levelChart = ({ gens, xTicks, runs, main, floor, ...rest }) => {
     const yMax = Chart.niceMax(Math.max(floor, ...runs.flat()));
     return {
@@ -559,7 +544,7 @@ window.Sims = (() => {
           show: fixed1,
         },
       ],
-      readouts: [{ key: "nstar", label: "임계 인구 N*" }],
+      readouts: [{ key: "nstar", label: "임계 인원 N*" }],
       status: true,
       // 100명(퇴보) → N* 근처 약 600명(겨우 유지) → 1만 명(발전). n은 log10 값
       steps: [
@@ -569,6 +554,7 @@ window.Sims = (() => {
       ],
       render({ n, alpha }, ui) {
         const dz = deltaZ(alpha, n);
+        ui.set("nstar", peopleExact(Math.round(nStar(alpha))));
         trend(ui, dz);
         const runs = runMany(RUNS, 11, {
           gens: GENS,
@@ -593,80 +579,6 @@ window.Sims = (() => {
     });
   }
 
-  /* ---------- 반복되는 참사 (질문 1) ----------
-     EVERY세대마다 참사가 인구를 cut만큼 줄인다. 그사이 출산율 TFR로 인구가 늘지만 거주지 한계(START_POP)를 넘지 못한다.
-     참사가 작으면 회복이 따라잡고, 크면 인구가 점점 줄어든다.
-     인구가 임계 인구 N* 아래로 내려가면 기술이 줄기 시작하고, 0이 되면 가르칠 사람이 없어 되살아나지 않는다. */
-  {
-    const START_POP = 10000,
-      ALPHA = 9.2, // 임계 인구 약 5,560명
-      TFR = 2.1,
-      EVERY = 6,
-      GENS = 60,
-      TRIALS = 40,
-      SHOWN = 14;
-    const critical = nStar(ALPHA);
-    // 세대별 인구. 세대마다 출산율/2를 곱하되 거주지 한계를 넘지 않고, EVERY세대마다 참사로 줄인다.
-    const popSeries = (cut) => {
-      const out = [];
-      let p = START_POP;
-      for (let t = 0; t <= GENS; t++) {
-        if (t > 0) {
-          p = Math.min(START_POP, (p * TFR) / 2);
-          if (t % EVERY === 0) p *= 1 - cut;
-        }
-        out.push(Math.max(2, Math.round(p)));
-      }
-      return out;
-    };
-    Sims.define("catastrophe", {
-      controls: [
-        {
-          key: "cut",
-          label: `참사 규모 (${EVERY}세대마다)`,
-          min: 0,
-          max: 50,
-          step: 1, // 1% 단위여야 발표 단계로 넘길 때 슬라이더가 부드럽게 움직인다
-          value: 20,
-          read: (v) => v / 100,
-          show: percent,
-        },
-      ],
-      readouts: [
-        { key: "end", label: `${GENS}세대 뒤 인구` },
-        { key: "lost", label: `영구 소실 (${TRIALS}회 중)` },
-      ],
-      status: true,
-      // 20%(인구 회복, 0% 소실) → 30%(인구 약 3,900명, 3% 소실) → 40%(인구 약 840명, 100% 소실)
-      steps: [{ cut: 20 }, { cut: 30 }, { cut: 40 }],
-      note: `인구 ${group(START_POP)}명(거주지 한계), 출산율 ${TFR}, α = ${ALPHA}, 임계 인구 약 ${group(
-        Math.round(critical / 10) * 10
-      )}명`,
-      render({ cut }, ui) {
-        const pops = popSeries(cut);
-        const all = runMany(TRIALS, 101, { gens: GENS, pop: (t) => pops[t], alpha: ALPHA });
-        const frac = all.filter((r) => r[GENS] === 0).length / TRIALS;
-        const runs = all.slice(0, SHOWN); // 그래프에는 일부만 그린다
-        ui.set("end", people(pops[GENS]));
-        ui.set("lost", percent(frac));
-        if (frac < 0.1) ui.status("지킴");
-        else if (frac < 0.6) ui.status("운에 달림");
-        else ui.status("영구 소실", true);
-        // 인구가 임계 인구 아래로 내려간 뒤를 음영으로 표시한다
-        const below = pops.findIndex((p) => p < critical);
-        ui.chart(
-          levelChart({
-            gens: GENS,
-            xTicks: [0, 10, 20, 30, 40, 50, 60],
-            runs,
-            main: mean(runs),
-            floor: 100, // 슬라이더 범위(0~50%)에서 숙련도 최댓값이 약 64라 세로축이 100으로 고정된다
-            bands: below < 0 ? [] : [{ from: below, to: GENS, label: "인구 < 임계 인구" }],
-          })
-        );
-      },
-    });
-  }
 })();
 </script>
     <script>
@@ -835,6 +747,9 @@ window.Sims = (() => {
           p(
             "그래서 지구가 무너질 때를 대비한 플랜 B로 화성을 기대하기는 당분간 어렵다."
           ),
+          p(
+            "그만한 기술이 있다면 차라리 지구의 이산화탄소를 줄이는 편이 쉽다. 플랜 B를 시도하는 것 자체가 위험할 수도 있다."
+          ),
         ]),
       ],
     },
@@ -843,20 +758,23 @@ window.Sims = (() => {
     {
       sec: ANALYSIS,
       ref: "나의 판단",
-      title: "조건부로 받아들인다",
+      title: "받아들인다",
       body: [
         p(
           `<b>저자의 주장</b>&ensp;유전보다 자급자족 때문에 매우 많은 인구가 필요 → 화성은 가까운 미래의 플랜&nbsp;B가 될 수 없음`
         ),
         cols(3, [
-          col({ label: "동의", text: "사람이 아주 많이 필요하다는 결론." }),
           col({
-            label: "보완할 근거",
-            text: "기술 쪽 숫자(10만~10억 명)는 유전 쪽만큼 따져서 나온 숫자가 아님.",
+            label: "판단",
+            text: "받아들인다. 기술 쪽을 유전 쪽만큼 따져 보면 오히려 더 많이 필요하다.",
+          }),
+          col({
+            label: "근거",
+            text: "책이 유전 계산에만 쓴 잣대(참사, 유효 인구, 선택의 자유)를 기술 쪽에 대면, 세 가지 모두 필요 인구를 늘린다.",
           }),
           col({
             label: "판단이 뒤집힐 때",
-            text: "기술 쪽도 유전 쪽만큼 따져 봤는데 필요 인구가 오히려 작아진다면.",
+            text: "사람이 직접 배우지 않아도 기록이나 AI로 기술을 지킬 수 있다면.",
           }),
         ]),
       ],
@@ -864,28 +782,29 @@ window.Sims = (() => {
     {
       sec: ANALYSIS,
       ref: "505–512쪽",
-      title: `유전은 세 가지를 따졌고, 기술은 ${accent("머릿수만")} 셌다`,
+      title: `기술 쪽에도 같은 잣대를 대면 ${accent("더 많이")} 필요하다`,
       body: [
         table({
-          head: [["따진 것", "18%"], ["유전 쪽에서는", "44%"], ["기술 쪽에서는"]],
+          head: [["잣대", "16%"], ["유전 쪽 (책)", "40%"], ["기술 쪽에 대 보면"]],
           rows: [
             [
               "<b>참사</b>",
-              "인구 30%가 줄어드는 참사를 모델에 넣음 (508)",
-              "넣지 않음",
+              "인구 30%가 줄어드는 참사를 모델에 넣음 (스미스, 508)",
+              "책에는 없음. 한 번 사라진 기술은 인구가 버텨도 돌아오지 않을 수 있다 (태즈메이니아의 어업)",
             ],
             [
               "<b>유효 인구</b>",
               "머릿수 대신 유효 인구를 셈. 남학생만 10만 명이면 유효 인구 0명 (505)",
-              "머릿수만 셈 (512)",
+              "책에는 산정 근거가 없음 (512). 헨릭은 인구 4,000명 중 배우는 사람을 800~1,000명으로 봄",
             ],
             [
               "<b>선택의 자유</b>",
               '결혼과 출산을 통제해 숫자를 줄이는 방식은 거부. "스스로 선택할 수 있을 만큼" (509–510)',
-              "누가 무엇을 배우고 맡을지는 다루지 않음",
+              "직업도 스스로 고르게 하면, 기술마다 배우는 사람이 모자라지 않도록 여유 인원이 더 필요",
             ],
           ],
         }),
+        statement("세 잣대 모두 필요 인구를 늘린다. 저자의 결론은 오히려 보수적이다."),
       ],
     },
     {
@@ -902,13 +821,40 @@ window.Sims = (() => {
               "자급 실패의 원인이 인구인지, 정책이나 제재인지 구분 불가",
             ],
             [
+              "인용된 권위는 해당 분야의 권위인가?",
+              "스트로스 (512)",
+              "SF 작가의 추정을, 북한과의 유추 하나만으로 '더 그럴듯하다'고 평가",
+            ],
+            [
               "확신이 근거에 비례하는가?",
-              "스트로스 (512), 안드로이드 마흔 대 (513)",
-              "SF 작가의 추정을 근거 없이 '더 그럴듯하다'고 평가. 낮은 추정치의 로봇 전제는 농담으로 처리",
+              "안드로이드 마흔 대 (513)",
+              "'그 정도 로봇이면 지구에 남는 편이 낫다'는 논증은 타당. 다만 '마흔 대'의 출처는 없음",
             ],
           ],
         }),
-        statement("방향은 타당. 다만 기술 쪽 숫자는 근거가 약함."),
+        statement("저자의 근거는 약하지만, 같은 잣대로 다시 따져도 결론은 유지된다."),
+      ],
+    },
+    {
+      sec: ANALYSIS,
+      ref: "503, 510, 514쪽",
+      title: "받아들이되, 결론이 어디까지 맞는지는 따져 볼 것",
+      body: [
+        cols(2, [
+          col({
+            label: "숨은 전제 (503, 510쪽)",
+            title: "플랜 B는 지구와 완전히 끊긴 채 버텨야 한다",
+            text: "소행성 충돌이나 팬데믹 뒤에도 지구에 생존자가 남아 교역이 다시 이어진다면, 필요한 자급 수준은 크게 낮아진다.",
+          }),
+          col({
+            label: "거짓 이분법 (514쪽)",
+            title: "\"그럴 기술이면 이산화탄소를 줄이는 편이 쉽다\"",
+            text: "플랜 B를 기후 대책하고만 비교했다. 소행성 충돌이나 핵전쟁에는 이산화탄소를 줄이는 것이 대안이 되지 못한다.",
+          }),
+        ]),
+        statement(
+          `'사람이 아주 많이 필요하다'는 ${accent("완전 단절")}을 전제할 때의 결론이다.`
+        ),
       ],
     },
     {
@@ -933,6 +879,9 @@ window.Sims = (() => {
             text: "인구 2배 이상, 외부와 교류. 뼈 도구와 활이 남아 있었다",
           }),
         ]),
+        small(
+          "한계: 태즈메이니아는 기록 없이 보고 배우기로만 기술을 전한 사회. 화성에는 기록과 AI가 있다 → 질문 1"
+        ),
         statement("헨릭의 설명: 배우는 사람이 줄면 복잡한 기술부터 사라진다."),
       ],
     },
@@ -957,28 +906,68 @@ window.Sims = (() => {
     /* ===== 질문 ===== */
     {
       sec: QUESTION,
-      ref: "508쪽",
+      ref: "513쪽, Henrich (2004)",
       body: [
-        simSlide("catastrophe", [
-          questionLabel("질문 1"),
-          question(
-            "인구 30%가 줄어드는 참사 뒤에 인구는 회복돼도, 기술은 끝내 못 돌아오는 경우가 있지 않을까?"
-          ),
-          p("책은 30% 참사를 유전 계산에만 넣었다."),
-          params([
-            ["참사 규모", "6세대마다 한 번, 줄어드는 인구 비율"],
-            ["출산율 2.1", "참사 사이에 인구가 조금씩 회복됨 (최대 10,000명)"],
-            ["임계 인구", "이 기술을 지키는 데 필요한 인원 (약 5,560명)"],
-          ]),
-          small("스미스의 참사 가정(508), Henrich (2004), 시뮬레이션"),
+        questionLabel("질문 1"),
+        question(
+          `화성에서 기술을 지키려고 AI를 쓴다면, 어느 순간 ${accent(
+            "아무도 그 기술을 이해하지 못한 채"
+          )} 쓰기만 하는 상태가 올 수 있다. 이것은 괜찮을까?`
+        ),
+        cols(2, [
+          col({
+            label: "Henrich (2004)",
+            title: "기술은 배우는 사람이 지킨다",
+            text: "배우는 사람이 줄자 복잡한 기술부터 사라졌다. AI가 대신 지키면 배우는 사람은 필요 없어지는가?",
+          }),
+          col({
+            label: "수학 AI 논란",
+            title: "아무도 따라가지 못하는 증명",
+            text: "AI가 낸 증명을 사람이 끝까지 이해하지 못해도 받아들일 수 있는가. 4색 정리(1976) 컴퓨터 증명 때부터 이어진 물음",
+          }),
         ]),
+        small(
+          "답에 필요한 근거: 자동화가 사람의 숙련을 떨어뜨린다는 연구(Bainbridge 1983, '자동화의 아이러니'), 4색 정리 증명의 수용 논쟁(Tymoczko 1979)"
+        ),
+      ],
+    },
+    {
+      sec: QUESTION,
+      ref: "512쪽, Henrich (2004)",
+      body: [
+        questionLabel("질문 2"),
+        question(
+          `지구와 끊긴 정착지라면, 성능은 낮아도 ${accent(
+            "현지에서 만들고 고칠 수 있는 컴퓨터"
+          )}와 성능은 높지만 지구 반도체에 기대는 컴퓨터 중 무엇을 기반으로 삼아야 할까? 그 경계는 어떤 기준으로 정할 수 있을까?`
+        ),
+        cols(3, [
+          col({
+            label: "512쪽",
+            title: "반도체",
+            text: "최첨단 칩 제조사는 세 곳뿐. 가볍고 작아서 실어 오는 편이 낫다. 지구와 끊기면 바로 막힌다.",
+          }),
+          col({
+            label: "Henrich (2004)",
+            title: "단순한 기술이 남는다",
+            text: "태즈메이니아에서 복잡한 기술은 사라졌지만 석기는 오히려 더 정교해졌다.",
+          }),
+          col({
+            label: "지금의 화성 탐사",
+            title: "일부러 낡은 칩",
+            text: "퍼서비어런스 로버도 2000년대 초 설계의 내방사선 칩(RAD750)을 쓴다. 성능보다 신뢰성을 골랐다.",
+          }),
+        ]),
+        small(
+          "답에 필요한 근거: 공정 세대별 설비·인력 규모, 고장률로 수명을 추정하는 신뢰성 공학 모델, 붕괴 이후용 컴퓨터 설계(Collapse OS)"
+        ),
       ],
     },
     {
       sec: QUESTION,
       ref: "512쪽",
       body: [
-        questionLabel("질문 2"),
+        questionLabel("질문 3"),
         question(
           `분업이 깊어질수록 기술 하나를 배우는 사람은 줄어든다. 작은 정착지에서 분업은 ${accent(
             "득일까 실일까?"
@@ -998,33 +987,6 @@ window.Sims = (() => {
         ]),
         small(
           "답에 필요한 근거: 분업의 깊이와 기술 유지의 관계를 다룬 연구, Hidalgo (2015) '퍼슨바이트'"
-        ),
-      ],
-    },
-    {
-      sec: QUESTION,
-      ref: "509–510쪽",
-      body: [
-        questionLabel("질문 3"),
-        question(
-          `필요 인구를 '살아남는 최소'가 아니라 ${accent(
-            "'결혼, 출산, 직업을 스스로 고를 수 있는 최소'"
-          )}로 정하면, 추정치는 얼마나 달라질까?`
-        ),
-        cols(2, [
-          col({
-            label: "509쪽",
-            title: "98명",
-            text: "결혼 상대와 출산을 컴퓨터가 정하는 조건에서만 가능한 숫자",
-          }),
-          col({
-            label: "510쪽",
-            title: "저자의 결론",
-            text: '"개인이 스스로 선택할 수 있을 만큼 자원이 확보될 때까지 기다리는 편이 낫다"',
-          }),
-        ]),
-        small(
-          "답에 필요한 근거: HERITAGE 모델과 자유 혼인을 가정한 모델의 비교, 직업 선택까지 넣은 기술 유지 모델"
         ),
       ],
     },

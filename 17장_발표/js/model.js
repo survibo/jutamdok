@@ -20,18 +20,14 @@ window.Model = (() => {
   const nStar = (alpha, beta = 1) => Math.exp(alpha / beta - GAMMA);
   const deltaZ = (alpha, n, beta = 1) => -alpha + beta * (GAMMA + Math.log(n));
 
-  /* 한 번의 시행. pop(t): t세대 인구, link(t): 지구와 연결 여부, earth: 지구 수준, ai: AI가 맡는 몫 */
-  function run({ gens, pop, alpha, beta = 1, ai = 0, start = 10, link = () => false, earth = 30, seed = 1 }) {
+  /* 한 번의 시행. pop(t): t세대에 배우는 사람 수.
+     숙련도가 0이 되면 그 기술을 아는 사람이 없으므로 그 뒤로는 0에 머문다(가정). */
+  function run({ gens, pop, alpha, beta = 1, start = 10, seed = 1 }) {
     const r = rng(seed);
-    const a = alpha * (1 - ai);
     const out = [start];
-    let b = start, extinct = false;
+    let b = start;
     for (let t = 0; t < gens; t++) {
-      const linked = link(t);
-      if (extinct && !linked) { out.push(0); continue; } // 가르칠 사람이 없으면 되살아나지 않는다
-      const teacher = linked ? Math.max(b, earth) : b;
-      b = teacher - a + beta * Math.log(pop(t)) + gumbel(r, beta);
-      if (b <= 0) { b = 0; extinct = true; } else extinct = false;
+      if (b > 0) b = Math.max(0, b - alpha + beta * Math.log(pop(t)) + gumbel(r, beta));
       out.push(b);
     }
     return out;
@@ -40,19 +36,8 @@ window.Model = (() => {
   /* 시드를 하나씩 바꿔 여러 번 돌린다 */
   const runMany = (count, firstSeed, opts) => Array.from({ length: count }, (_, k) => run({ ...opts, seed: firstSeed + k }));
 
-  /* 세대별 평균: [[세대, 평균]...] */
-  const mean = (runs) => runs[0].map((_, t) => [t, runs.reduce((s, r) => s + r[t], 0) / runs.length]);
-
   /* ---------- 숫자 표기 ---------- */
   const group = (n) => n.toLocaleString('ko-KR');
-  function people(n) {
-    if (!isFinite(n)) return '∞';
-    if (n < 1) return '1명 미만';
-    if (n < 1e4) return group(Math.round(n)) + '명';
-    const [v, unit] = n < 1e8 ? [n / 1e4, '만 명'] : [n / 1e8, '억 명'];
-    return (v < 100 ? v.toFixed(1).replace(/\.0$/, '') : group(Math.round(v))) + unit;
-  }
-  const percent = (x) => Math.round(x * 100) + '%';
 
-  return { nStar, deltaZ, run, runMany, mean, group, people, percent };
+  return { nStar, deltaZ, run, runMany, group };
 })();

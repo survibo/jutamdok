@@ -93,4 +93,4 @@ table.t.compact { font-size: 21px; }
 
 /* 슬라이드 오른쪽 위의 논문 이미지 (참고용으로 작게) */
 .paper { position: absolute; top: 80px; right: 100px; width: 250px; border: 1px solid var(--line); }
-.with-paper > .cols, .with-paper > .statement { margin-right: 300px; }
+.with-paper > .cols, .with-paper > .statement, .with-paper > .small { margin-right: 300px; }
