@@ -52,17 +52,17 @@
           min: 2,
           max: 14,
           step: 0.1,
-          value: 7,
+          value: 8,
           show: fixed1,
         },
       ],
       readouts: [{ key: "nstar", label: "임계 인원 N*" }],
       status: true,
-      // 100명(퇴보) → N* 근처 약 600명(겨우 유지) → 1만 명(발전). n은 log10 값
+      // 100명(퇴보) → N* 근처 약 1,700명(겨우 유지) → 1만 명(발전). n은 log10 값. α=8은 태즈메이니아(800~1,000명에서 소실)에 맞춤
       steps: [
-        { n: 2, alpha: 7 },
-        { n: 2.79, alpha: 7 },
-        { n: 4, alpha: 7 },
+        { n: 2, alpha: 8 },
+        { n: 3.22, alpha: 8 },
+        { n: 4, alpha: 8 },
       ],
       render({ n, alpha }, ui) {
         const dz = deltaZ(alpha, n);
